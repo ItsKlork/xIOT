@@ -26,8 +26,6 @@ public class FaceRecognition extends Module {
 
     private Map<String, List<byte[]>> savedFaces;
 
-    private FaceRecognitionEvent eventForRegistration = new FaceRecognitionEvent(new String[0]);
-
     @Override
     public void start() {
         if (this.status == ModuleStatus.RUNNING) {
@@ -63,9 +61,15 @@ public class FaceRecognition extends Module {
         // Load sample faces
         savedFaces = new HashMap<>();
         try {
-            savedFaces.put("Barack Obama", List.of(Files.readAllBytes(new File("faces/Barack Obama/barack.jpg").toPath())));
-            savedFaces.put("Guy Porat", List.of(Files.readAllBytes(new File("faces/Guy Porat/guy.jpg").toPath())));
-            savedFaces.put("Joe Biden", List.of(Files.readAllBytes(new File("faces/Joe Biden/biden.jpg").toPath())));
+            savedFaces.put("Barack Obama", List.of(
+                    Files.readAllBytes(new File("faces/Barack Obama/obama.jpg").toPath())
+            ));
+            savedFaces.put("Guy Porat", List.of(
+                    Files.readAllBytes(new File("faces/Guy Porat/guy.jpg").toPath())
+            ));
+            savedFaces.put("Joe Biden", List.of(
+                    Files.readAllBytes(new File("faces/Joe Biden/biden.jpg").toPath())
+            ));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -109,7 +113,7 @@ public class FaceRecognition extends Module {
             client.getNetworkHandler().sendPacket(uuid, savedFaces);
             Logger.debug("Sent dataset to client " + client.getUUID());
         } else if (action.equals("report_faces")) {
-            Logger.debug("Received a face report from client " + client.getUUID());
+            // Logger.debug("Received a face report from client " + client.getUUID());
             String[] faces = GsonUtils.getGson().fromJson(data.get("faces"), String[].class);
             MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces));
         } else {

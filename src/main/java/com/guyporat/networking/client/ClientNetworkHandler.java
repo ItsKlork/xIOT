@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleManager;
+import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
 import com.guyporat.utils.NetworkProtocol;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 
 public class ClientNetworkHandler extends Thread {
 
-    private static final Gson gson = new Gson();
+    private Gson gson;
 
     private final Socket socket;
     private boolean handshakeComplete;
@@ -27,6 +28,7 @@ public class ClientNetworkHandler extends Thread {
     public ClientNetworkHandler(Socket socket) {
         this.socket = socket;
         this.handshakeComplete = false;
+        this.gson = GsonUtils.getGson();
     }
 
     @Override

@@ -18,6 +18,8 @@ public class DoorLock extends Module implements EventListener {
 
     private List<String> allowedUsers;
 
+    private DoorState doorState;
+
 
     @Override
     public void start() {
@@ -42,7 +44,9 @@ public class DoorLock extends Module implements EventListener {
     @Override
     public void initialize() {
         this.status = ModuleStatus.STOPPED;
-        this.allowedUsers = List.of("Guy Porat", "Joe Biden");
+
+        this.allowedUsers = List.of("Joe Biden");
+        this.doorState = DoorState.CLOSED;
 
         MainServer.getEventManager().registerEvents(this);
     }
@@ -81,10 +85,22 @@ public class DoorLock extends Module implements EventListener {
     public void onFaceRecognized(FaceRecognition.FaceRecognitionEvent event) {
         for (String face : event.getFaces()) {
             if (allowedUsers.contains(face)) {
-                Logger.info("Face recognized: " + face);
-                break;
+                if (doorState == DoorState.CLOSED)
+                    Logger.info("Opened door for " + face);
+                doorState = DoorState.OPEN;
+                return;
             }
         }
+
+        if (doorState == DoorState.OPEN) {
+            Logger.info("No recognized faces, closing door");
+            doorState = DoorState.CLOSED;
+        }
+    }
+
+    private enum DoorState {
+        OPEN,
+        CLOSED
     }
 
 }
