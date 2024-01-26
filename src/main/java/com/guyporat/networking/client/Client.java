@@ -1,38 +1,20 @@
 package com.guyporat.networking.client;
 
-import java.util.UUID;
+public abstract class Client {
 
-public class Client {
+    private final String clientName;
 
-    private final ClientNetworkHandler networkHandler;
-    private final UUID uuid;
-    private final ClientType type;
-    private final String deviceName;
-
-    public Client(ClientNetworkHandler networkHandler, UUID uuid, ClientType type, String deviceName) {
-        this.networkHandler = networkHandler;
-        this.uuid = uuid;
-        this.type = type;
-        this.deviceName = deviceName;
+    public Client(String clientName) {
+        this.clientName = clientName;
     }
 
-    public ClientNetworkHandler getNetworkHandler() {
-        return networkHandler;
+    public abstract ClientType getType();
+
+    public String getClientName() {
+        return clientName;
     }
 
-    public UUID getUUID() {
-        return uuid;
-    }
-
-    public ClientType getType() {
-        return type;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    protected enum ClientType {
+    public enum ClientType {
         IOT_DEVICE,
         USER
     }

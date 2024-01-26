@@ -1,7 +1,7 @@
 package com.guyporat.networking;
 
 import com.guyporat.MainServer;
-import com.guyporat.networking.client.ClientNetworkHandler;
+import com.guyporat.networking.client.ClientSocketNetworkHandler;
 import com.guyporat.utils.Logger;
 
 import java.io.IOException;
@@ -11,39 +11,44 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class NetworkHandler {
+public class SocketNetworkHandler {
 
     // Handler fields
     private ServerSocket serverSocket;
 
-    private List<ClientNetworkHandler> clientThreads;
+    private final List<ClientSocketNetworkHandler> clientThreads = Collections.synchronizedList(new ArrayList<>());
 
     public void networkLoop() {
-        clientThreads = Collections.synchronizedList(new ArrayList<>());
+        int socketPort = MainServer.getConfig().getInteger("socket_port");
         try {
-            this.serverSocket = new ServerSocket(MainServer.getConfig().getInteger("port"));
+            this.serverSocket = new ServerSocket(socketPort);
         } catch (IOException e) {
-            Logger.error("Failed to start server socket on port " + MainServer.getConfig().getInteger("port") + e.getMessage());
+            Logger.error("Failed to start server socket on port " + socketPort + e.getMessage());
             return;
         }
-        Logger.info("Started server socket on port " + MainServer.getConfig().getInteger("port"));
-        new Thread(() -> {
+
+        Logger.info("Started server socket on port " + socketPort);
+        new Thread(() -> { // Starts socket accepting loop
             try {
                 while (true) {
                     Socket currentClient = serverSocket.accept();
                     Logger.info("Accepted client " + currentClient.getInetAddress().getHostAddress() + ":" + currentClient.getPort());
-                    ClientNetworkHandler cnh = new ClientNetworkHandler(currentClient);
+                    ClientSocketNetworkHandler cnh = new ClientSocketNetworkHandler(currentClient);
                     cnh.start();
                     clientThreads.add(cnh);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }, "Network loop").start();
+        }, "Socket network loop").start();
     }
 
-    public void removeClient(ClientNetworkHandler cnh) {
+    public void removeClient(ClientSocketNetworkHandler cnh) {
         clientThreads.remove(cnh);
+    }
+
+    public List<ClientSocketNetworkHandler> getAllDeviceNetworkHandlers() {
+        return clientThreads;
     }
 
 }

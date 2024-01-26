@@ -16,19 +16,43 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
-public class ClientNetworkHandler extends Thread {
+public class ClientSocketNetworkHandler extends Thread {
 
-    private Gson gson;
+    /*
+        The protocol goes as follows:
+        1. Client connects to server
+        2. Client sends a handshake packet with the following data:
+            {
+                "module_uuid": "00000000-0000-0000-0000-000000000000",
+                "data": {
+                    "username": "username",
+                    "password": "password"
+                }
+            }
+        3. Client sends a packet with the following data:
+            {
+                "module_uuid": "<target module uuid>",
+                "data": {
+                    "some": "data"
+                }
+            }
+     */
+
+    private final Gson gson;
 
     private final Socket socket;
     private boolean handshakeComplete;
 
-    private Client client;
+    private DeviceClient client;
 
-    public ClientNetworkHandler(Socket socket) {
+    public ClientSocketNetworkHandler(Socket socket) {
         this.socket = socket;
         this.handshakeComplete = false;
         this.gson = GsonUtils.getGson();
+    }
+
+    public DeviceClient getClient() {
+        return client;
     }
 
     @Override
@@ -41,7 +65,7 @@ public class ClientNetworkHandler extends Thread {
 
                 String packetDataDecoded = new String(packetData, StandardCharsets.UTF_8);
                 JsonObject packetJsonRoot = gson.fromJson(packetDataDecoded, JsonObject.class);
-
+                System.out.println(packetDataDecoded);
                 String targetUUID = packetJsonRoot.get("module_uuid").getAsString();
                 if (targetUUID.equals("00000000-0000-0000-0000-000000000000"))
                     this.handshakeComplete = this.attemptLogin(packetJsonRoot.getAsJsonObject("data"));
@@ -72,7 +96,7 @@ public class ClientNetworkHandler extends Thread {
         } finally {
             try {
                 socket.close();
-                MainServer.getNetworkHandler().removeClient(this);
+                MainServer.getSocketNetworkHandler().removeClient(this);
             } catch (IOException ignored) {
             }
         }
@@ -95,14 +119,16 @@ public class ClientNetworkHandler extends Thread {
 
     private boolean attemptLogin(JsonObject loginData) {
         // TODO: implement authentication
-        if (!loginData.has("username") || !loginData.has("password") || !loginData.has("client_type")) {
+        if (!loginData.has("uuid") || !loginData.has("secret")) {
             return false;
         }
-        String deviceUsername = loginData.get("username").getAsString();
-        String devicePassword = loginData.get("password").getAsString();
-        String deviceType = loginData.get("client_type").getAsString();
-        this.client = new Client(this, UUID.randomUUID(), Client.ClientType.valueOf(deviceType), deviceUsername);
-        Logger.info("Client " + deviceUsername + " logged in as " + deviceType + " with uuid " + this.client.getUUID());
+        String deviceUUID = loginData.get("uuid").getAsString();
+        String deviceSecret = loginData.get("secret").getAsString();
+        String deviceType = loginData.get("type").getAsString();
+
+        String deviceName = "מכשיר בדיקה";
+        this.client = new DeviceClient(this, UUID.fromString(deviceUUID), deviceName, DeviceClient.IOTDeviceType.valueOf(deviceType));
+        Logger.info("Device " + this.socket.getInetAddress().toString() + " logged in with uuid " + UUID.fromString(deviceUUID));
         return true;
     }
 

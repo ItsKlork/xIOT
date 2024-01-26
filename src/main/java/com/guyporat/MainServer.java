@@ -2,13 +2,15 @@ package com.guyporat;
 
 import com.guyporat.config.Config;
 import com.guyporat.modules.ModuleManager;
-import com.guyporat.networking.NetworkHandler;
+import com.guyporat.networking.SocketNetworkHandler;
+import com.guyporat.networking.WebSocketNetworkHandler;
 import com.guyporat.utils.Logger;
 import me.nurio.events.EventManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 
 public class MainServer {
@@ -16,7 +18,8 @@ public class MainServer {
     private static Config config;
     private static final String mainConfigName = "main.cfg";
 
-    private static NetworkHandler networkHandler;
+    private static SocketNetworkHandler socketNetworkHandler;
+    private static WebSocketNetworkHandler webSocketNetworkHandler;
 
     private static final EventManager eventManager = new EventManager();
 
@@ -25,9 +28,11 @@ public class MainServer {
 
         ModuleManager.getInstance().initializeManager();
 
-        networkHandler = new NetworkHandler();
-        networkHandler.networkLoop();
+        socketNetworkHandler = new SocketNetworkHandler();
+        socketNetworkHandler.networkLoop();
 
+        webSocketNetworkHandler = new WebSocketNetworkHandler(new InetSocketAddress(getConfig().getInteger("websocket_port")));
+        webSocketNetworkHandler.start();
     }
 
     private static void initializeMainConfig() {
@@ -55,8 +60,12 @@ public class MainServer {
         return config;
     }
 
-    public static NetworkHandler getNetworkHandler() {
-        return networkHandler;
+    public static SocketNetworkHandler getSocketNetworkHandler() {
+        return socketNetworkHandler;
+    }
+
+    public static WebSocketNetworkHandler getWebSocketNetworkHandler() {
+        return webSocketNetworkHandler;
     }
 
     public static EventManager getEventManager() {

@@ -1,25 +1,24 @@
 package com.guyporat.modules.impl;
 
+import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
 import com.guyporat.config.Config;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
+import com.guyporat.networking.client.Client;
+import com.guyporat.networking.client.ClientSocketNetworkHandler;
+import com.guyporat.networking.client.DeviceClient;
+import com.guyporat.networking.client.WebClient;
+import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
-import me.nurio.events.handler.EventHandler;
-import me.nurio.events.handler.EventListener;
 
 import java.util.List;
 import java.util.UUID;
 
-public class DoorLock extends Module implements EventListener {
+public class Devices extends Module {
 
     private ModuleStatus status;
-    private final UUID uuid = UUID.fromString("d009a719-db5d-4e38-87be-ec59b9f65630");
-
-    private List<String> allowedUsers;
-
-    private DoorState doorState;
-
+    private final UUID uuid = UUID.fromString("41747d8e-a73d-4087-b0d6-fe680cc31c00");
 
     @Override
     public void start() {
@@ -44,11 +43,19 @@ public class DoorLock extends Module implements EventListener {
     @Override
     public void initialize() {
         this.status = ModuleStatus.STOPPED;
+    }
 
-        this.allowedUsers = List.of("Guy Porat");
-        this.doorState = DoorState.CLOSED;
+    private List<DeviceClient> getIOTDevices() {
+        return MainServer.getSocketNetworkHandler().getAllDeviceNetworkHandlers().stream().map(ClientSocketNetworkHandler::getClient).toList();
+    }
 
-        MainServer.getEventManager().registerEvents(this);
+    @Override
+    public void handleConnection(Client client, JsonObject data) {
+        if (client instanceof WebClient webClient) {
+            if (data.get("action").getAsString().equals("get_devices")) {
+                webClient.send("devices", GsonUtils.getGson().toJson(this.getIOTDevices()));
+            }
+        }
     }
 
     @Override
@@ -58,12 +65,12 @@ public class DoorLock extends Module implements EventListener {
 
     @Override
     public String getName() {
-        return "Door Lock";
+        return "Devices";
     }
 
     @Override
     public String getDescription() {
-        return "The module that controls the door lock";
+        return "Module used to gather information about devices in the house";
     }
 
     @Override
@@ -73,34 +80,11 @@ public class DoorLock extends Module implements EventListener {
 
     @Override
     public String getVersion() {
-        return "beta-0.1";
+        return "0.1b";
     }
 
     @Override
     public Config getConfig() {
         return null;
     }
-
-    @EventHandler
-    public void onFaceRecognized(Camera.FaceRecognitionEvent event) {
-        for (String face : event.getFaces()) {
-            if (allowedUsers.contains(face)) {
-                if (doorState == DoorState.CLOSED)
-                    Logger.info("Opened door for " + face);
-                doorState = DoorState.OPEN;
-                return;
-            }
-        }
-
-        if (doorState == DoorState.OPEN) {
-            Logger.info("No recognized faces, closing door");
-            doorState = DoorState.CLOSED;
-        }
-    }
-
-    private enum DoorState {
-        OPEN,
-        CLOSED
-    }
-
 }
