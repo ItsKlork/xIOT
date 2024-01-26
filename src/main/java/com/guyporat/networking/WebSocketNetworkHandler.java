@@ -20,7 +20,7 @@ public class WebSocketNetworkHandler extends WebSocketServer {
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         System.out.println(webSocket.getRemoteSocketAddress().toString());
-        webClients.put(webSocket.getRemoteSocketAddress(), new WebClient(webSocket, "WebClient"));
+        webClients.put(webSocket.getRemoteSocketAddress(), new WebClient(webSocket));
     }
 
     @Override

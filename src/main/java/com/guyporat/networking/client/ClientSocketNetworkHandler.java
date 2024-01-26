@@ -126,8 +126,8 @@ public class ClientSocketNetworkHandler extends Thread {
         String deviceSecret = loginData.get("secret").getAsString();
         String deviceType = loginData.get("type").getAsString();
 
-        String deviceName = "מכשיר בדיקה";
-        this.client = new DeviceClient(this, UUID.fromString(deviceUUID), deviceName, DeviceClient.IOTDeviceType.valueOf(deviceType));
+        this.client = new DeviceClient(this, UUID.fromString(deviceUUID), DeviceClient.IOTDeviceType.valueOf(deviceType));
+        this.client.loadSettings();
         Logger.info("Device " + this.socket.getInetAddress().toString() + " logged in with uuid " + UUID.fromString(deviceUUID));
         return true;
     }

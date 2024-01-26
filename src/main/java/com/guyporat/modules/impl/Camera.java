@@ -22,7 +22,6 @@ public class Camera extends Module {
     private ModuleStatus status;
     private final UUID uuid = UUID.fromString("c2ca9921-80fe-48b0-9d64-6c74a0d03e9f");
 
-    private Map<UUID, CameraOptions> cameraOptions;
     private Map<String, List<byte[]>> savedFaces;
 
     @Override
@@ -48,10 +47,6 @@ public class Camera extends Module {
     @Override
     public void initialize() {
         this.status = ModuleStatus.STOPPED;
-
-        // Load current options from database
-        this.cameraOptions = new HashMap<>();
-        this.cameraOptions.put(UUID.fromString("2e0c3bd9-a50b-4adc-befa-4e81e7683a8c"), new CameraOptions("מצלמה 1", true));
 
         this.savedFaces = new HashMap<>();
         try {
@@ -103,8 +98,7 @@ public class Camera extends Module {
         System.out.println(data.toString());
         if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) {
             if (data.get("type").getAsString().equals("get_camera_options")) {
-                deviceClient.getNetworkHandler().sendPacket(this.uuid, this.cameraOptions.getOrDefault(deviceClient.getDeviceUUID(),
-                        new CameraOptions("מצלמה לא ידועה", false)));
+                deviceClient.getNetworkHandler().sendPacket(this.uuid, deviceClient.getSettings());
             } else if (data.get("type").getAsString().equals("get_faces")) {
                 deviceClient.getNetworkHandler().sendPacket(this.uuid, savedFaces);
             } else if (data.get("type").getAsString().equals("report_faces")) {
@@ -116,9 +110,6 @@ public class Camera extends Module {
     }
 
     private void handleConnection(WebClient webClient, JsonObject data) {
-        if (data.get("type").getAsString().equals("get_cameras")) {
-            webClient.send("camera", GsonUtils.getGson().toJson(this.cameraOptions));
-        }
     }
 
     @Override
@@ -129,18 +120,6 @@ public class Camera extends Module {
         } else {
             WebClient webClient = (WebClient) client;
             this.handleConnection(webClient, data);
-        }
-    }
-
-    class CameraOptions {
-        @com.google.gson.annotations.SerializedName("camera_name")
-        public String cameraName;
-        @com.google.gson.annotations.SerializedName("face_recognition")
-        public boolean isFaceRecognitionEnabled;
-
-        public CameraOptions(String cameraName, boolean isFaceRecognitionEnabled) {
-            this.cameraName = cameraName;
-            this.isFaceRecognitionEnabled = isFaceRecognitionEnabled;
         }
     }
 
@@ -155,5 +134,6 @@ public class Camera extends Module {
         public String[] getFaces() {
             return faces;
         }
+
     }
 }

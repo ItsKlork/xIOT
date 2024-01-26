@@ -52,8 +52,22 @@ public class Devices extends Module {
     @Override
     public void handleConnection(Client client, JsonObject data) {
         if (client instanceof WebClient webClient) {
-            if (data.get("action").getAsString().equals("get_devices")) {
-                webClient.send("devices", GsonUtils.getGson().toJson(this.getIOTDevices()));
+            String action = data.get("action").getAsString();
+            if (action.equals("get_devices")) {
+                webClient.send("devices", GsonUtils.getGson().toJson(this.getIOTDevices().stream().map(DeviceClient::getAsShortObject).toList()));
+            } else if (action.equals("get_device") || action.equals("set_device_settings")) {
+                UUID deviceUUID = UUID.fromString(data.get("device_uuid").getAsString());
+                DeviceClient deviceClient = this.getIOTDevices().stream().filter(device -> device.getDeviceUUID().equals(deviceUUID)).findFirst().orElse(null);
+                if (deviceClient == null) {
+                    Logger.error("Device " + deviceUUID + " not found");
+                    return;
+                }
+                if (action.equals("get_device")) {
+                    webClient.send("device", GsonUtils.getGson().toJson(deviceClient));
+                } else {
+                    deviceClient.setSettings(data.get("settings"));
+                    webClient.send("devices", GsonUtils.getGson().toJson(this.getIOTDevices().stream().map(DeviceClient::getAsShortObject).toList()));
+                }
             }
         }
     }

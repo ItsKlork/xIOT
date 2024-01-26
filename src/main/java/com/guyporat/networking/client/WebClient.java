@@ -22,9 +22,9 @@ public class WebClient extends Client {
 
     private WebSocket webSocket;
     private boolean isAuth = false;
+    private String username = null;
 
-    public WebClient(WebSocket ws, String clientName) {
-        super(clientName);
+    public WebClient(WebSocket ws) {
         this.webSocket = ws;
     }
 
@@ -48,8 +48,11 @@ public class WebClient extends Client {
         }
         if (!isAuth) {
             JsonObject loginData = packet.getAsJsonObject("data");
-            if (loginData.get("username").getAsString().equals("admin") && loginData.get("password").getAsString().equals("password")) {
+            String username = loginData.get("username").getAsString();
+            String password = loginData.get("password").getAsString();
+            if (username.equals("admin") && password.equals("password")) {
                 isAuth = true;
+                this.username = username;
                 send("auth", gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
                 System.out.println("Client authenticated");
             } else {
@@ -61,6 +64,7 @@ public class WebClient extends Client {
         }
         if (packet.get("type").getAsString().equals("signout")) {
             isAuth = false;
+            this.username = null;
             send("signout", gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
             System.out.println("Client signed out");
             return;
@@ -72,7 +76,7 @@ public class WebClient extends Client {
             if (optionalTarget.isPresent())
                 optionalTarget.get().handleConnection(this, packet.get("data").getAsJsonObject());
             else
-                Logger.warn("Client " + this.getClientName() + " tried to send a packet to a non-existent module " + moduleUUID);
+                Logger.warn("Client " + this.username + " tried to send a packet to a non-existent module " + moduleUUID);
             return;
         }
         System.out.println("Got message: " + message);
