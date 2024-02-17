@@ -14,8 +14,4 @@ public class DoorLockSettings extends DeviceSettings {
         return name;
     }
 
-    public DoorLockSettings(boolean openState, String name) {
-        this.openState = openState;
-        this.name = name;
-    }
 }
