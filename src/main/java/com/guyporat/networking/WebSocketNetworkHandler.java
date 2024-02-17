@@ -53,4 +53,8 @@ public class WebSocketNetworkHandler extends WebSocketServer {
     public void onStart() {
         Logger.info("Started WebSocket server on port " + this.getPort());
     }
+
+    public Map<InetSocketAddress, WebClient> getWebClients() {
+        return webClients;
+    }
 }

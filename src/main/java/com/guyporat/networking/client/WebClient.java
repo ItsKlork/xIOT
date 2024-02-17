@@ -21,7 +21,7 @@ public class WebClient extends Client {
     }
 
     private WebSocket webSocket;
-    private boolean isAuth = false;
+    private boolean isAuthenticated = false;
     private String username = null;
 
     public WebClient(WebSocket ws) {
@@ -32,26 +32,22 @@ public class WebClient extends Client {
         return webSocket;
     }
 
-    public void setWebSocket(WebSocket webSocket) {
-        this.webSocket = webSocket;
-    }
-
     public void send(String channel, String message) {
         webSocket.send(Utils.padLeftSpaces(channel, 10) + message);
     }
 
     public void receive(String message) {
         JsonObject packet = gson.fromJson(message, JsonObject.class);
-        if (!isAuth && !packet.get("type").getAsString().equals("auth")) {
+        if (!isAuthenticated && !packet.get("type").getAsString().equals("auth")) {
             System.out.println("Client is not authenticated");
             return;
         }
-        if (!isAuth) {
+        if (!isAuthenticated) {
             JsonObject loginData = packet.getAsJsonObject("data");
             String username = loginData.get("username").getAsString();
             String password = loginData.get("password").getAsString();
             if (username.equals("admin") && password.equals("password")) {
-                isAuth = true;
+                isAuthenticated = true;
                 this.username = username;
                 send("auth", gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
                 System.out.println("Client authenticated");
@@ -63,7 +59,7 @@ public class WebClient extends Client {
             return;
         }
         if (packet.get("type").getAsString().equals("signout")) {
-            isAuth = false;
+            isAuthenticated = false;
             this.username = null;
             send("signout", gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
             System.out.println("Client signed out");
@@ -89,6 +85,10 @@ public class WebClient extends Client {
     @Override
     public ClientType getType() {
         return ClientType.USER;
+    }
+
+    public boolean isAuthenticated() {
+        return isAuthenticated;
     }
 
     private static class AuthResponse {
