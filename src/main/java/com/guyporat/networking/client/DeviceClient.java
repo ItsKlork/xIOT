@@ -1,17 +1,18 @@
 package com.guyporat.networking.client;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.guyporat.modules.impl.Devices;
 import com.guyporat.networking.client.states.CameraSettings;
 import com.guyporat.networking.client.states.DeviceSettings;
 import com.guyporat.networking.client.states.DoorLockSettings;
 import com.guyporat.utils.GsonUtils;
+import com.guyporat.utils.Logger;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class DeviceClient extends Client {
 
-    private final UUID deviceUUID;
     private final IOTDeviceType deviceType;
     private DeviceSettings settings;
 
@@ -25,10 +26,6 @@ public class DeviceClient extends Client {
 
     public ClientSocketNetworkHandler getNetworkHandler() {
         return networkHandler;
-    }
-
-    public UUID getDeviceUUID() {
-        return deviceUUID;
     }
 
     public IOTDeviceType getDeviceType() {
@@ -58,10 +55,11 @@ public class DeviceClient extends Client {
 
     public void loadSettings() {
         // TODO: load settings from database
-        if (this.deviceType == IOTDeviceType.CAMERA) {
-            this.settings = new CameraSettings("מכשיר בדיקה", true, UUID.randomUUID());
-        } else if (this.deviceType == IOTDeviceType.DOOR_LOCK) {
-            this.settings = new DoorLockSettings("מנעול בדיקה", false);
+        System.out.println("Loading settings for camera " + this.deviceUUID + " TEST:" + Devices.getDevicesInDB().stream().filter(device -> device.deviceUUID.equals(this.deviceUUID)).toList());
+        try {
+            this.settings = Devices.getDevicesInDB().stream().filter(device -> device.deviceUUID.equals(this.deviceUUID)).findFirst().orElseThrow().deviceSettings;
+        } catch (NoSuchElementException e) {
+            Logger.error("[UNEXPECTED ERROR] Device " + this.deviceUUID + " not found in database. This is AFTER authentication.");
         }
     }
 

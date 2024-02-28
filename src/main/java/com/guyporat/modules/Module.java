@@ -2,6 +2,7 @@ package com.guyporat.modules;
 
 import com.google.gson.JsonObject;
 import com.guyporat.config.Config;
+import com.guyporat.networking.PacketType;
 import com.guyporat.networking.client.Client;
 import me.nurio.events.handler.Event;
 
@@ -31,7 +32,7 @@ public abstract class Module {
     public abstract Config getConfig();
 
     // Connection handler
-    public void handleConnection(Client client, JsonObject data) {
+    public void handleConnection(Client client, PacketType packetType, JsonObject data) {
     }
 
     public Event getEvent() {

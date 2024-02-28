@@ -3,14 +3,13 @@ package com.guyporat.networking.client;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.guyporat.modules.Module;
-import com.guyporat.modules.ModuleManager;
+import com.guyporat.networking.PacketType;
 import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
 import com.guyporat.utils.Utils;
 import org.java_websocket.WebSocket;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public class WebClient extends Client {
 
@@ -32,50 +31,52 @@ public class WebClient extends Client {
         return webSocket;
     }
 
-    public void send(String channel, String message) {
-        webSocket.send(Utils.padLeftSpaces(channel, 10) + message);
+    public void send(PacketType packetType, String message) {
+        webSocket.send(Utils.padLeftChar(Integer.toString(packetType.getId()), 3, '0') + message);
     }
 
     public void receive(String message) {
         JsonObject packet = gson.fromJson(message, JsonObject.class);
-        if (!isAuthenticated && !packet.get("type").getAsString().equals("auth")) {
+        PacketType packetType = PacketType.fromId(packet.get("pid").getAsInt());
+        if (packetType == null) {
+            Logger.error("Client " + (this.username != null ? this.username : this.webSocket.getRemoteSocketAddress().toString()) + " sent an invalid packet type");
+            return;
+        }
+
+        if (!isAuthenticated && packetType != PacketType.WEB_AUTHENTICATION) {
             System.out.println("Client is not authenticated");
             return;
         }
-        if (!isAuthenticated) {
+        if (!isAuthenticated) { // Web authentication attempt
             JsonObject loginData = packet.getAsJsonObject("data");
             String username = loginData.get("username").getAsString();
             String password = loginData.get("password").getAsString();
             if (username.equals("admin") && password.equals("password")) {
                 isAuthenticated = true;
                 this.username = username;
-                send("auth", gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
+                send(PacketType.WEB_AUTHENTICATION_RESPONSE, gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
                 System.out.println("Client authenticated");
             } else {
-                send("auth", gson.toJson(new AuthResponse("invalid_credentials", "פרטי התחברות שגויים")));
+                send(PacketType.WEB_AUTHENTICATION_RESPONSE, gson.toJson(new AuthResponse("invalid_credentials", "פרטי התחברות שגויים")));
 
                 System.out.println("Client failed to authenticate");
             }
             return;
         }
-        if (packet.get("type").getAsString().equals("signout")) {
+
+        if (packetType == PacketType.WEB_AUTH_SIGN_OUT) {
             isAuthenticated = false;
             this.username = null;
-            send("signout", gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
+            send(PacketType.WEB_AUTH_SIGN_OUT_RESPONSE, gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
             System.out.println("Client signed out");
             return;
         }
 
-        if (packet.get("type").getAsString().equals("module")) {
-            String moduleUUID = packet.get("module_uuid").getAsString();
-            Optional<Module> optionalTarget = ModuleManager.getInstance().getModuleByUUID(UUID.fromString(moduleUUID));
-            if (optionalTarget.isPresent())
-                optionalTarget.get().handleConnection(this, packet.get("data").getAsJsonObject());
-            else
-                Logger.warn("Client " + this.username + " tried to send a packet to a non-existent module " + moduleUUID);
-            return;
-        }
-        System.out.println("Got message: " + message);
+        Optional<Module> optionalTarget = packetType.getHandlingModule();
+        if (optionalTarget.isPresent())
+            optionalTarget.get().handleConnection(this, packetType, packet.get("data").getAsJsonObject());
+        else
+            Logger.error("Packet type " + packetType + " does not have a valid handling module");
     }
 
     public void close() {

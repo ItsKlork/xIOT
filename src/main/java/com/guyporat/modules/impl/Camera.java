@@ -5,9 +5,11 @@ import com.guyporat.MainServer;
 import com.guyporat.config.Config;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
+import com.guyporat.networking.PacketType;
 import com.guyporat.networking.client.Client;
 import com.guyporat.networking.client.DeviceClient;
 import com.guyporat.networking.client.WebClient;
+import com.guyporat.utils.CompressionUtils;
 import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
 import me.nurio.events.handler.Event;
@@ -20,9 +22,9 @@ import java.util.*;
 public class Camera extends Module {
 
     private ModuleStatus status;
-    private final UUID uuid = UUID.fromString("c2ca9921-80fe-48b0-9d64-6c74a0d03e9f");
+    private static final UUID uuid = UUID.fromString("c2ca9921-80fe-48b0-9d64-6c74a0d03e9f");
 
-    private Map<String, List<byte[]>> savedFaces;
+    private Map<String, byte[]> facesDatasetCompressed;
 
     @Override
     public void start() {
@@ -48,17 +50,11 @@ public class Camera extends Module {
     public void initialize() {
         this.status = ModuleStatus.STOPPED;
 
-        this.savedFaces = new HashMap<>();
+        this.facesDatasetCompressed = new HashMap<>();
         try {
-            savedFaces.put("Barack Obama", List.of(
-                    Files.readAllBytes(new File("faces/Barack Obama/1.jpg").toPath())
-            ));
-            savedFaces.put("Guy Porat", List.of(
-                    Files.readAllBytes(new File("faces/Guy Porat/1.jpg").toPath())
-            ));
-            savedFaces.put("Joe Biden", List.of(
-                    Files.readAllBytes(new File("faces/Joe Biden/1.jpg").toPath())
-            ));
+            facesDatasetCompressed.put("Barack Obama", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Barack Obama/1.jpg").toPath())));
+            facesDatasetCompressed.put("Guy Porat", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Guy Porat/1.jpg").toPath())));
+            facesDatasetCompressed.put("Joe Biden", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Joe Biden/1.jpg").toPath())));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -81,7 +77,11 @@ public class Camera extends Module {
 
     @Override
     public UUID getUUID() {
-        return this.uuid;
+        return uuid;
+    }
+
+    public static UUID getStaticUUID() {
+        return uuid;
     }
 
     @Override
@@ -94,33 +94,38 @@ public class Camera extends Module {
         return null;
     }
 
-    private void handleConnection(DeviceClient deviceClient, JsonObject data) {
+    private void handleConnection(DeviceClient deviceClient, PacketType packetType, JsonObject data) {
         System.out.println(data.toString());
-        if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) {
-            if (data.get("type").getAsString().equals("get_camera_options")) {
-                deviceClient.getNetworkHandler().sendPacket(this.uuid, deviceClient.getSettings());
-            } else if (data.get("type").getAsString().equals("get_faces")) {
-                deviceClient.getNetworkHandler().sendPacket(this.uuid, savedFaces);
-            } else if (data.get("type").getAsString().equals("report_faces")) {
-                Logger.debug("Received a face report from client " + deviceClient.getDeviceUUID());
-                String[] faces = GsonUtils.getGson().fromJson(data.get("faces"), String[].class);
-                MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces));
+        if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) { // Packets from a camera device
+            switch (packetType) {
+                case GET_CAMERA_SETTINGS -> {
+                    deviceClient.getNetworkHandler().sendPacket(PacketType.DEVICE_SETTINGS, deviceClient.getSettings());
+                }
+                case GET_FACE_RECOGNITION_FACE_DATASET -> {
+                    deviceClient.getNetworkHandler().sendPacket(PacketType.FACE_RECOGNITION_FACE_DATASET, facesDatasetCompressed);
+                }
+                case REPORT_FACE_RECOGNITION_DETECTION -> {
+                    Logger.debug("Received a face report from client " + deviceClient.getDeviceUUID());
+                    String[] faces = GsonUtils.getGson().fromJson(data.get("faces"), String[].class);
+                    MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces));
+                }
             }
         }
     }
 
-    private void handleConnection(WebClient webClient, JsonObject data) {
-    }
-
     @Override
-    public void handleConnection(Client client, JsonObject data) {
+    public void handleConnection(Client client, PacketType packetType, JsonObject data) {
         if (client.getType() == Client.ClientType.IOT_DEVICE) {
             DeviceClient deviceClient = (DeviceClient) client;
-            this.handleConnection(deviceClient, data);
+            this.handleConnection(deviceClient, packetType, data);
         } else {
             WebClient webClient = (WebClient) client;
-            this.handleConnection(webClient, data);
+            this.handleConnection(webClient, packetType, data);
         }
+    }
+
+    private void handleConnection(WebClient webClient, PacketType packetType, JsonObject data) {
+        Logger.error("[UNIMPLEMENTED] handleConnection(WebClient, JsonObject)");
     }
 
     public static class FaceRecognitionEvent extends Event {
