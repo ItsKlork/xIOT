@@ -48,6 +48,12 @@
             <version>0.0.5</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>0.10.2</version>
+        </dependency>
     </dependencies>
 
 </project>
