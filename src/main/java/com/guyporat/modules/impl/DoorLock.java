@@ -45,7 +45,7 @@ public class DoorLock extends Module implements EventListener {
     public void initialize() {
         this.status = ModuleStatus.STOPPED;
 
-        this.allowedUsers = List.of("Guy Porat");
+        this.allowedUsers = List.of("Guy Porat", "Joe Biden");
         this.doorState = DoorState.CLOSED;
 
         MainServer.getEventManager().registerEvents(this);

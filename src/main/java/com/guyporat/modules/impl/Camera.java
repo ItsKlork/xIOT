@@ -55,6 +55,9 @@ public class Camera extends Module {
             facesDatasetCompressed.put("Barack Obama", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Barack Obama/1.jpg").toPath())));
             facesDatasetCompressed.put("Guy Porat", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Guy Porat/1.jpg").toPath())));
             facesDatasetCompressed.put("Joe Biden", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Joe Biden/1.jpg").toPath())));
+            /*facesDatasetCompressed.put("Barack Obama", Files.readAllBytes(new File("faces/Barack Obama/1.jpg").toPath()));
+            facesDatasetCompressed.put("Guy Porat", Files.readAllBytes(new File("faces/Guy Porat/1.jpg").toPath()));
+            facesDatasetCompressed.put("Joe Biden", Files.readAllBytes(new File("faces/Joe Biden/1.jpg").toPath()));*/
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
