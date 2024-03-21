@@ -4,6 +4,7 @@ import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleManager;
 import com.guyporat.modules.impl.Camera;
 import com.guyporat.modules.impl.Devices;
+import com.guyporat.modules.impl.Tenants;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +18,8 @@ public enum PacketType {
     GET_DEVICE(3, Devices.getStaticUUID()),
     SET_DEVICE_SETTINGS(4, Devices.getStaticUUID()),
     CREATE_DEVICE(5, Devices.getStaticUUID()),
+    GET_TENANTS(6, Tenants.getStaticUUID()),
+    UPDATE_TENANT(7, Tenants.getStaticUUID()),
     // END REGION
 
 
@@ -27,6 +30,8 @@ public enum PacketType {
     GET_DEVICE_RESPONSE(53),
     SET_DEVICE_SETTINGS_RESPONSE(54),
     CREATE_DEVICE_RESPONSE(55),
+    GET_TENANTS_RESPONSE(56),
+    UPDATE_TENANT_RESPONSE(57),
     // END REGION
 
 

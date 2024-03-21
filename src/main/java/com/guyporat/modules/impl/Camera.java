@@ -3,28 +3,25 @@ package com.guyporat.modules.impl;
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
 import com.guyporat.config.Config;
+import com.guyporat.database.model.TenantModel;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
 import com.guyporat.networking.PacketType;
 import com.guyporat.networking.client.Client;
 import com.guyporat.networking.client.DeviceClient;
 import com.guyporat.networking.client.WebClient;
-import com.guyporat.utils.CompressionUtils;
 import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
 import me.nurio.events.handler.Event;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.*;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class Camera extends Module {
 
     private ModuleStatus status;
     private static final UUID uuid = UUID.fromString("c2ca9921-80fe-48b0-9d64-6c74a0d03e9f");
-
-    private Map<String, byte[]> facesDatasetCompressed;
 
     @Override
     public void start() {
@@ -49,18 +46,6 @@ public class Camera extends Module {
     @Override
     public void initialize() {
         this.status = ModuleStatus.STOPPED;
-
-        this.facesDatasetCompressed = new HashMap<>();
-        try {
-            facesDatasetCompressed.put("Barack Obama", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Barack Obama/1.jpg").toPath())));
-            facesDatasetCompressed.put("Guy Porat", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Guy Porat/1.jpg").toPath())));
-            facesDatasetCompressed.put("Joe Biden", CompressionUtils.compressData(Files.readAllBytes(new File("faces/Joe Biden/1.jpg").toPath())));
-            /*facesDatasetCompressed.put("Barack Obama", Files.readAllBytes(new File("faces/Barack Obama/1.jpg").toPath()));
-            facesDatasetCompressed.put("Guy Porat", Files.readAllBytes(new File("faces/Guy Porat/1.jpg").toPath()));
-            facesDatasetCompressed.put("Joe Biden", Files.readAllBytes(new File("faces/Joe Biden/1.jpg").toPath()));*/
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -105,7 +90,15 @@ public class Camera extends Module {
                     deviceClient.getNetworkHandler().sendPacket(PacketType.DEVICE_SETTINGS, deviceClient.getSettings());
                 }
                 case GET_FACE_RECOGNITION_FACE_DATASET -> {
-                    deviceClient.getNetworkHandler().sendPacket(PacketType.FACE_RECOGNITION_FACE_DATASET, facesDatasetCompressed);
+                    HashMap<String, byte[]> dataset = new HashMap<>();
+                    for (TenantModel tenant : Tenants.getTenantDatabase()) {
+                        try {
+                            dataset.put(tenant.getFullName(), tenant.getCompressedFaceData());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    deviceClient.getNetworkHandler().sendPacket(PacketType.FACE_RECOGNITION_FACE_DATASET, dataset);
                 }
                 case REPORT_FACE_RECOGNITION_DETECTION -> {
                     Logger.debug("Received a face report from client " + deviceClient.getDeviceUUID());

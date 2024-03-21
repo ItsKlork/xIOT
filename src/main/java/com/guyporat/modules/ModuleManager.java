@@ -3,6 +3,7 @@ package com.guyporat.modules;
 import com.guyporat.modules.impl.Camera;
 import com.guyporat.modules.impl.Devices;
 import com.guyporat.modules.impl.DoorLock;
+import com.guyporat.modules.impl.Tenants;
 import com.guyporat.utils.Logger;
 
 import java.util.List;
@@ -29,9 +30,10 @@ public class ModuleManager {
     public void initializeManager() {
         Logger.debug("Initializing module manager");
         this.modules = List.of(
+                new Devices(),
+                new Tenants(),
                 new DoorLock(),
-                new Camera(),
-                new Devices()
+                new Camera()
         );
 
         for (Module module : this.modules) {

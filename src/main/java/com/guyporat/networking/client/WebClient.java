@@ -2,7 +2,9 @@ package com.guyporat.networking.client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.guyporat.database.model.TenantModel;
 import com.guyporat.modules.Module;
+import com.guyporat.modules.impl.Tenants;
 import com.guyporat.networking.PacketType;
 import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
@@ -51,10 +53,11 @@ public class WebClient extends Client {
             JsonObject loginData = packet.getAsJsonObject("data");
             String username = loginData.get("username").getAsString();
             String password = loginData.get("password").getAsString();
-            if (username.equals("admin") && password.equals("password")) {
+            Optional<TenantModel> targetTenant = Tenants.getTenantDatabase().stream().filter(tenant -> tenant.isWebUser() && tenant.getUsername().equals(username) && tenant.comparePassword(password)).findAny();
+            if (targetTenant.isPresent()) {
                 isAuthenticated = true;
                 this.username = username;
-                send(PacketType.WEB_AUTHENTICATION_RESPONSE, gson.toJson(new AuthResponse("success", "admin", "גיא פורת")));
+                send(PacketType.WEB_AUTHENTICATION_RESPONSE, gson.toJson(new AuthResponse("success", this.username, targetTenant.get().getFullName())));
                 System.out.println("Client authenticated");
             } else {
                 send(PacketType.WEB_AUTHENTICATION_RESPONSE, gson.toJson(new AuthResponse("invalid_credentials", "פרטי התחברות שגויים")));
