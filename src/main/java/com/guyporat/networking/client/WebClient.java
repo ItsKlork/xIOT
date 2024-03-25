@@ -21,7 +21,7 @@ public class WebClient extends Client {
         gson = GsonUtils.getGson();
     }
 
-    private WebSocket webSocket;
+    private final WebSocket webSocket;
     private boolean isAuthenticated = false;
     private String username = null;
 

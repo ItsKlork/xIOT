@@ -19,14 +19,14 @@ public class WebSocketNetworkHandler extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-        System.out.println(webSocket.getRemoteSocketAddress().toString());
+        Logger.debug(webSocket.getRemoteSocketAddress().getAddress() + " opened");
         webClients.put(webSocket.getRemoteSocketAddress(), new WebClient(webSocket));
     }
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         webClients.remove(webSocket.getRemoteSocketAddress());
-        System.out.println("Client closed: " + webSocket.getRemoteSocketAddress().toString());
+        Logger.debug(webSocket.getRemoteSocketAddress().getAddress() + " closed");
     }
 
     @Override
@@ -40,13 +40,12 @@ public class WebSocketNetworkHandler extends WebSocketServer {
     @Override
     public void onError(WebSocket webSocket, Exception e) {
         webClients.remove(webSocket.getRemoteSocketAddress());
-        System.out.println("Client error: " + e.getMessage());
+        Logger.error("WebSocket error: " + e.getMessage());
     }
 
     @Override
     public void onClosing(WebSocket conn, int code, String reason, boolean remote) {
         super.onClosing(conn, code, reason, remote);
-        System.out.println(conn.getRemoteSocketAddress().getAddress());
     }
 
     @Override
