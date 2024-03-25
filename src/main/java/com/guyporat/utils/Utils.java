@@ -1,6 +1,17 @@
 package com.guyporat.utils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Utils {
+
+    private static final Map<String, String> mimeTypes = new HashMap<>();
+
+    static {
+        mimeTypes.put("image/jpeg", "jpg");
+        mimeTypes.put("image/pjpeg", "jpg");
+        mimeTypes.put("image/png", "png");
+    }
 
     public static String padLeftSpaces(String inputString, int length) {
         return padLeftChar(inputString, length, ' ');
@@ -17,6 +28,10 @@ public class Utils {
         sb.append(inputString);
 
         return sb.toString();
+    }
+
+    public static String getExtension(String mimeType) {
+        return mimeTypes.get(mimeType);
     }
 
 }
