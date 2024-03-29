@@ -20,6 +20,8 @@ public enum PacketType {
     CREATE_DEVICE(5, Devices.getStaticUUID()),
     GET_TENANTS(6, Tenants.getStaticUUID()),
     UPDATE_TENANT(7, Tenants.getStaticUUID()),
+    REMOVE_TENANT(8, Tenants.getStaticUUID()),
+    ADD_TENANT(9, Tenants.getStaticUUID()),
     // END REGION
 
 
@@ -32,6 +34,8 @@ public enum PacketType {
     CREATE_DEVICE_RESPONSE(55),
     GET_TENANTS_RESPONSE(56),
     UPDATE_TENANT_RESPONSE(57),
+    REMOVE_TENANT_RESPONSE(58),
+    ADD_TENANT_RESPONSE(59),
     // END REGION
 
 
