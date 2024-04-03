@@ -104,7 +104,7 @@ public class Camera extends Module {
                 case REPORT_FACE_RECOGNITION_DETECTION -> {
                     Logger.debug("Received a face report from client " + deviceClient.getDeviceUUID());
                     String[] faces = GsonUtils.getGson().fromJson(data.get("faces"), String[].class);
-                    MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces));
+                    MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces, deviceClient.getSettings().getDeviceName()));
                 }
             }
         }
@@ -131,15 +131,20 @@ public class Camera extends Module {
     public static class FaceRecognitionEvent extends Event {
 
         private final String[] faces;
+        private final String cameraName;
 
-        public FaceRecognitionEvent(String[] faces) {
+        public FaceRecognitionEvent(String[] faces, String cameraName) {
             this.faces = faces;
+            this.cameraName = cameraName;
         }
 
         public String[] getFaces() {
             return faces;
         }
 
+        public String getCameraName() {
+            return cameraName;
+        }
     }
 
 }
