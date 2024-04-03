@@ -16,6 +16,7 @@ import me.nurio.events.handler.Event;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class Camera extends Module {
@@ -121,7 +122,10 @@ public class Camera extends Module {
     }
 
     private void handleConnection(WebClient webClient, PacketType packetType, JsonObject data) {
-        Logger.error("[UNIMPLEMENTED] handleConnection(WebClient, JsonObject)");
+        if (packetType == PacketType.GET_CAMERAS) {
+            List<Devices.JsonDevice> allCameras = Devices.getDevicesInDBJson().stream().filter(device -> device.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA).toList();
+            webClient.send(PacketType.GET_CAMERAS_RESPONSE, GsonUtils.getGson().toJson(allCameras));
+        }
     }
 
     public static class FaceRecognitionEvent extends Event {
@@ -137,4 +141,5 @@ public class Camera extends Module {
         }
 
     }
+
 }

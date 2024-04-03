@@ -204,6 +204,10 @@ public class Devices extends Module {
             this.deviceType = deviceType;
             this.active = active;
         }
+
+        public DeviceClient.IOTDeviceType getDeviceType() {
+            return deviceType;
+        }
     }
 
 }

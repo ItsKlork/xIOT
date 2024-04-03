@@ -2,6 +2,7 @@ package com.guyporat;
 
 import com.guyporat.config.Config;
 import com.guyporat.modules.ModuleManager;
+import com.guyporat.networking.HLSReverseProxy;
 import com.guyporat.networking.SocketNetworkHandler;
 import com.guyporat.networking.WebSocketNetworkHandler;
 import com.guyporat.utils.Logger;
@@ -33,6 +34,13 @@ public class MainServer {
 
         webSocketNetworkHandler = new WebSocketNetworkHandler(new InetSocketAddress(getConfig().getInteger("websocket_port")));
         webSocketNetworkHandler.start();
+
+        HLSReverseProxy hlsReverseProxy = new HLSReverseProxy();
+        try {
+            hlsReverseProxy.startHTTPServer(getConfig().getInteger("http_camera_rproxy_port"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void initializeMainConfig() {

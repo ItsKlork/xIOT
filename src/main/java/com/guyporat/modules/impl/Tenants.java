@@ -55,7 +55,7 @@ public class Tenants extends Module {
         this.status = ModuleStatus.STOPPED;
         tenantDatabase = new ArrayList<>();
         UUID guyUUID = UUID.fromString("313e3d86-b34d-4d53-aaed-098bf85ee207");
-        tenantDatabase.add(new TenantModel("גיא פורת", true, "guy", "$2a$12$Sgv6TFy4z5JtZQ1SPOO0SeD/npOHXRx7nTE9Gg1o4wpaQddXhgs5a", "image/jpeg", "faces/" + guyUUID + "/1.jpg", guyUUID));
+        tenantDatabase.add(new TenantModel("גיא פורת", true, "guy", "$2a$12$FPsNA2FSwPEzSjLcWH5BNetCRVMHt3mFR77rxzpHT.iiXMVvqJxz.", "image/jpeg", "faces/" + guyUUID + "/1.jpg", guyUUID));
         UUID bidenUUID = UUID.fromString("9008f5a6-3b8d-4552-b08c-d5319596ceca");
         tenantDatabase.add(new TenantModel("ג'ו ביידן", "image/jpeg", "faces/" + bidenUUID + "/1.jpg", bidenUUID));
     }

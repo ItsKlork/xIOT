@@ -2,6 +2,7 @@ package com.guyporat.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Utils {
 
@@ -32,6 +33,15 @@ public class Utils {
 
     public static String getExtension(String mimeType) {
         return mimeTypes.get(mimeType);
+    }
+
+    public static boolean isValidUUID(String uuid) {
+        try {
+            UUID.fromString(uuid);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 }

@@ -156,6 +156,10 @@ public class ClientSocketNetworkHandler extends Thread {
         return true;
     }
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     public boolean isAuthenticated() {
         return this.handshakeComplete;
     }

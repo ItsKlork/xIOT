@@ -22,6 +22,7 @@ public enum PacketType {
     UPDATE_TENANT(7, Tenants.getStaticUUID()),
     REMOVE_TENANT(8, Tenants.getStaticUUID()),
     ADD_TENANT(9, Tenants.getStaticUUID()),
+    GET_CAMERAS(10, Camera.getStaticUUID()),
     // END REGION
 
 
@@ -36,18 +37,15 @@ public enum PacketType {
     UPDATE_TENANT_RESPONSE(57),
     REMOVE_TENANT_RESPONSE(58),
     ADD_TENANT_RESPONSE(59),
+    GET_CAMERAS_RESPONSE(60),
     // END REGION
 
 
     // REGION Device client to server packets (100 - 149)
     DEVICE_AUTHENTICATION(100, null),
-
-    // Camera module packets
     GET_CAMERA_SETTINGS(101, Camera.getStaticUUID()),
     GET_FACE_RECOGNITION_FACE_DATASET(102, Camera.getStaticUUID()),
     REPORT_FACE_RECOGNITION_DETECTION(103, Camera.getStaticUUID()),
-
-    // Devices module packets
 
     // END REGION
 
