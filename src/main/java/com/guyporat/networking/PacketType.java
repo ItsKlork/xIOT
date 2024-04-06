@@ -4,6 +4,7 @@ import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleManager;
 import com.guyporat.modules.impl.Camera;
 import com.guyporat.modules.impl.Devices;
+import com.guyporat.modules.impl.Notifications;
 import com.guyporat.modules.impl.Tenants;
 
 import java.util.Optional;
@@ -23,6 +24,7 @@ public enum PacketType {
     REMOVE_TENANT(8, Tenants.getStaticUUID()),
     ADD_TENANT(9, Tenants.getStaticUUID()),
     GET_CAMERAS(10, Camera.getStaticUUID()),
+    GET_NOTIFICATIONS(11, Notifications.getStaticUUID()),
     // END REGION
 
 
@@ -38,6 +40,8 @@ public enum PacketType {
     REMOVE_TENANT_RESPONSE(58),
     ADD_TENANT_RESPONSE(59),
     GET_CAMERAS_RESPONSE(60),
+    NEW_NOTIFICATION(61),
+    GET_NOTIFICATIONS_RESPONSE(62),
     // END REGION
 
 

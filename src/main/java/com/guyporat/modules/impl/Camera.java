@@ -84,7 +84,6 @@ public class Camera extends Module {
     }
 
     private void handleConnection(DeviceClient deviceClient, PacketType packetType, JsonObject data) {
-        System.out.println(data.toString());
         if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) { // Packets from a camera device
             switch (packetType) {
                 case GET_CAMERA_SETTINGS -> {

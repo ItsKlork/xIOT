@@ -1,5 +1,7 @@
 package com.guyporat.config;
 
+import com.guyporat.utils.Logger;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,11 +25,11 @@ public class Config {
             try {
                 boolean creationResult = this.file.createNewFile();
                 if (!creationResult)
-                    System.err.println("Failed to create config file " + file_name + " (createNewFile returned false)");
+                    Logger.error("Failed to create config file " + file_name + " (createNewFile returned false)");
                 else
-                    System.out.println("Created config file " + file_name);
+                    Logger.info("Created config file " + file_name);
             } catch (IOException e) {
-                System.err.println("Failed to create config file " + file_name + ":");
+                Logger.error("Failed to create config file " + file_name + ":");
                 e.printStackTrace();
             }
         }
@@ -41,13 +43,11 @@ public class Config {
         if (!data.isEmpty())
             data.clear();
         for (String line : Files.readAllLines(this.file.toPath(), StandardCharsets.UTF_8)) {
-            System.out.println(line);
             if (!line.startsWith("\""))
                 continue;
             int keyEndIndex = line.indexOf('"', 1);
             String key = line.substring(1, keyEndIndex);
             String value = line.substring(keyEndIndex + 3);
-            System.out.println(key + " " + value);
             data.put(key, value);
         }
     }

@@ -7,6 +7,7 @@ import com.guyporat.MainServer;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleManager;
 import com.guyporat.modules.impl.Devices;
+import com.guyporat.modules.impl.Notifications;
 import com.guyporat.networking.PacketType;
 import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
@@ -63,14 +64,11 @@ public class ClientSocketNetworkHandler extends Thread {
         Devices devicesModule = (Devices) ModuleManager.getInstance().getModuleByUUID(Devices.getStaticUUID()).orElseThrow();
         try {
             while (!this.handshakeComplete) {
-                System.out.println("H1 ");
                 byte[] packetData = NetworkProtocol.receive(socket.getInputStream());
 
                 String packetDataDecoded = new String(packetData, StandardCharsets.UTF_8);
                 JsonObject packetJsonRoot = gson.fromJson(packetDataDecoded, JsonObject.class);
-                System.out.println(packetDataDecoded);
                 int packetIdentifier = packetJsonRoot.get("pid").getAsInt();
-                System.out.println("H2");
                 if (packetIdentifier == PacketType.DEVICE_AUTHENTICATION.getId())
                     this.handshakeComplete = this.attemptLogin(packetJsonRoot.getAsJsonObject("data"));
                 else
@@ -79,6 +77,9 @@ public class ClientSocketNetworkHandler extends Thread {
 
             // Successful login, notify all web clients of new device
             MainServer.getWebSocketNetworkHandler().getWebClients().values().stream().filter(WebClient::isAuthenticated).forEach(webClient -> webClient.send(PacketType.GET_DEVICES_RESPONSE, GsonUtils.getGson().toJson(Devices.getDevicesInDBJson())));
+
+            // Send notification that the device has connected
+            ((Notifications)ModuleManager.getInstance().getModuleByUUID(Notifications.getStaticUUID()).get()).sendNotification(new Notifications.Notification(Notifications.NotificationType.DEVICE_INFO, "המכשיר " + this.client.getSettings().getDeviceName() + " התחבר"));
 
             while (true) {
                 byte[] packetData = NetworkProtocol.receive(socket.getInputStream());
@@ -109,7 +110,7 @@ public class ClientSocketNetworkHandler extends Thread {
             }
 
         } catch (RuntimeException e) {
-            Logger.error("Client " + (this.client.getDeviceUUID() != null ? this.client.getDeviceUUID() : socket.getInetAddress().getHostAddress()) + " disconnected: " + e.getMessage());
+            Logger.error("Client " + (this.client != null && this.client.getDeviceUUID() != null ? this.client.getDeviceUUID() : socket.getInetAddress().getHostAddress()) + " disconnected: " + e.getMessage());
         } catch (IOException e) {
             Logger.error(e.getMessage());
         } finally {
@@ -146,12 +147,9 @@ public class ClientSocketNetworkHandler extends Thread {
         String deviceUUID = loginData.get("uuid").getAsString();
         String deviceSecret = loginData.get("secret").getAsString();
         String deviceType = loginData.get("type").getAsString();
-        System.out.println(deviceUUID + " " + deviceSecret + " " + deviceType);
-        System.out.println("H3");
+
         this.client = new DeviceClient(this, UUID.fromString(deviceUUID), DeviceClient.IOTDeviceType.valueOf(deviceType));
-        System.out.println("H4");
         this.client.loadSettings();
-        System.out.println("H5");
         Logger.info("Device " + this.socket.getInetAddress().toString() + " logged in with uuid " + deviceUUID);
         return true;
     }

@@ -56,7 +56,6 @@ public class DeviceClient extends Client {
 
     public void loadSettings() {
         // TODO: load settings from database
-        System.out.println("Loading settings for camera " + this.deviceUUID + " TEST:" + Devices.getDevicesInDB().stream().filter(device -> device.deviceUUID.equals(this.deviceUUID)).toList());
         try {
             this.settings = Devices.getDevicesInDB().stream().filter(device -> device.deviceUUID.equals(this.deviceUUID)).findFirst().orElseThrow().deviceSettings;
         } catch (NoSuchElementException e) {
