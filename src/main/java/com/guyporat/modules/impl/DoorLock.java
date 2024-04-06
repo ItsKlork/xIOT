@@ -76,11 +76,6 @@ public class DoorLock extends Module implements EventListener {
         return "beta-0.1";
     }
 
-    @Override
-    public Config getConfig() {
-        return null;
-    }
-
     @EventHandler
     public void onFaceRecognized(Camera.FaceRecognitionEvent event) {
         for (String face : event.getFaces()) {

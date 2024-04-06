@@ -187,11 +187,6 @@ public class Devices extends Module {
         return "0.1b";
     }
 
-    @Override
-    public Config getConfig() {
-        return null;
-    }
-
     public static class JsonDevice {
         private final UUID deviceUUID;
         private final String name;

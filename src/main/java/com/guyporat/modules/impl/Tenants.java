@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -258,11 +257,6 @@ public class Tenants extends Module {
     @Override
     public String getVersion() {
         return "0.1b";
-    }
-
-    @Override
-    public Config getConfig() {
-        return null;
     }
 
 }

@@ -1,7 +1,5 @@
 package com.guyporat.networking.client.states;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.UUID;
 
 public class CameraSettings extends DeviceSettings {

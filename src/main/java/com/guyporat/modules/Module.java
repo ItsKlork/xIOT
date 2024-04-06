@@ -28,9 +28,6 @@ public abstract class Module {
 
     public abstract String getVersion();
 
-    // Config file
-    public abstract Config getConfig();
-
     // Connection handler
     public void handleConnection(Client client, PacketType packetType, JsonObject data) {
     }

@@ -1,13 +1,11 @@
 package com.guyporat.modules.impl;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
 import com.guyporat.config.Config;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
 import com.guyporat.networking.PacketType;
-import com.guyporat.networking.WebSocketNetworkHandler;
 import com.guyporat.networking.client.Client;
 import com.guyporat.networking.client.WebClient;
 import com.guyporat.utils.GsonUtils;
@@ -107,11 +105,6 @@ public class Notifications extends Module implements EventListener {
     @Override
     public String getVersion() {
         return "0.1b";
-    }
-
-    @Override
-    public Config getConfig() {
-        return null;
     }
 
     public static UUID getStaticUUID() {

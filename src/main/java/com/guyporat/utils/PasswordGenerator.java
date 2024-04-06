@@ -107,9 +107,8 @@ public final class PasswordGenerator {
     }
 
     /**
-     * This method will generate a password depending the use* properties you
-     * define. It will use the categories with a probability. It is not sure
-     * that all of the defined categories will be used.
+     * This method will generate a password depending on the properties you
+     * define. It will use the categories with a probability. Not all categories must be used.
      *
      * @param length the length of the password you would like to generate.
      * @return a password that uses the categories you define when constructing

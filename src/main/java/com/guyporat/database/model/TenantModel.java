@@ -81,7 +81,7 @@ public class TenantModel {
         }
     }
 
-    public byte[] getCompressedFaceData() throws IOException {
+    public byte[] getCompressedFaceData() {
         return CompressionUtils.compressData(getFaceData());
     }
 

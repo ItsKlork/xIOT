@@ -78,10 +78,6 @@ public class Camera extends Module {
         return "b0.2";
     }
 
-    @Override
-    public Config getConfig() {
-        return null;
-    }
 
     private void handleConnection(DeviceClient deviceClient, PacketType packetType, JsonObject data) {
         if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) { // Packets from a camera device
@@ -92,11 +88,7 @@ public class Camera extends Module {
                 case GET_FACE_RECOGNITION_FACE_DATASET -> {
                     HashMap<String, byte[]> dataset = new HashMap<>();
                     for (TenantModel tenant : Tenants.getTenantDatabase()) {
-                        try {
-                            dataset.put(tenant.getFullName(), tenant.getCompressedFaceData());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        dataset.put(tenant.getFullName(), tenant.getCompressedFaceData());
                     }
                     deviceClient.getNetworkHandler().sendPacket(PacketType.FACE_RECOGNITION_FACE_DATASET, dataset);
                 }

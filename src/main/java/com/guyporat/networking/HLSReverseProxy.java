@@ -1,7 +1,5 @@
 package com.guyporat.networking;
 
-import com.guyporat.modules.ModuleManager;
-import com.guyporat.modules.impl.Camera;
 import com.guyporat.modules.impl.Devices;
 import com.guyporat.networking.client.DeviceClient;
 import com.guyporat.utils.Logger;
