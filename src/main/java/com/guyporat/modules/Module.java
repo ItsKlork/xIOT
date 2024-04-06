@@ -1,7 +1,6 @@
 package com.guyporat.modules;
 
 import com.google.gson.JsonObject;
-import com.guyporat.config.Config;
 import com.guyporat.networking.PacketType;
 import com.guyporat.networking.client.Client;
 import me.nurio.events.handler.Event;

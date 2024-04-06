@@ -2,7 +2,6 @@ package com.guyporat.modules.impl;
 
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
-import com.guyporat.config.Config;
 import com.guyporat.database.model.TenantModel;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
@@ -14,7 +13,6 @@ import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
 import me.nurio.events.handler.Event;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -82,9 +80,7 @@ public class Camera extends Module {
     private void handleConnection(DeviceClient deviceClient, PacketType packetType, JsonObject data) {
         if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) { // Packets from a camera device
             switch (packetType) {
-                case GET_CAMERA_SETTINGS -> {
-                    deviceClient.getNetworkHandler().sendPacket(PacketType.DEVICE_SETTINGS, deviceClient.getSettings());
-                }
+                case GET_CAMERA_SETTINGS -> deviceClient.getNetworkHandler().sendPacket(PacketType.DEVICE_SETTINGS, deviceClient.getSettings());
                 case GET_FACE_RECOGNITION_FACE_DATASET -> {
                     HashMap<String, byte[]> dataset = new HashMap<>();
                     for (TenantModel tenant : Tenants.getTenantDatabase()) {

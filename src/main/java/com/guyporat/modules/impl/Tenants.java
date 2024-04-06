@@ -4,7 +4,6 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.guyporat.MainServer;
-import com.guyporat.config.Config;
 import com.guyporat.database.model.TenantModel;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
@@ -89,7 +88,7 @@ public class Tenants extends Module {
         }
 
         UUID uuid = UUID.randomUUID();
-        String faceDataPath = "faces/" + uuid.toString() + "/1." + Utils.getExtension(faceDataType);
+        String faceDataPath = "faces/" + uuid + "/1." + Utils.getExtension(faceDataType);
         byte[] decodedFaceData = Base64.getDecoder().decode(faceData.getBytes());
         File faceDataFile = new File(faceDataPath);
         if (!faceDataFile.getParentFile().mkdirs()) {
@@ -190,7 +189,7 @@ public class Tenants extends Module {
             targetTenant.setFaceDataType(data.get("faceDataType").getAsString());
         if (data.has("face")) {
             // Delete previous face data from file
-            String previousPath = "faces/" + uuid.toString() + "/1." + Utils.getExtension(oldFaceDataType);
+            String previousPath = "faces/" + uuid + "/1." + Utils.getExtension(oldFaceDataType);
             try {
                 if (!new File(previousPath).delete())
                     Logger.error("Failed to delete previous face data of user " + targetTenant.getFullName());
@@ -199,7 +198,7 @@ public class Tenants extends Module {
             }
 
             // Update file extension
-            targetTenant.setFaceDataPath("faces/" + uuid.toString() + "/1." + Utils.getExtension(targetTenant.getFaceDataType()));
+            targetTenant.setFaceDataPath("faces/" + uuid + "/1." + Utils.getExtension(targetTenant.getFaceDataType()));
 
             // Write to file
             byte[] decodedFaceData = Base64.getDecoder().decode(data.get("face").getAsString().getBytes());

@@ -71,7 +71,7 @@ public class HLSReverseProxy {
                 DeviceClient camera = optionalCamera.get();
                 URL url = new URL(camera.getHLSUrl() + "/" + uriParts[1]);
                 URLConnection connection = url.openConnection();
-                Logger.debug("Opening connection to " + url.toString());
+                Logger.debug("Opening connection to " + url);
                 connection.setDoInput(true);
                 try (InputStream inputStreamFromCamera = connection.getInputStream();
                      OutputStream outputStreamToClient = exchange.getResponseBody()) {

@@ -3,7 +3,6 @@ package com.guyporat.modules.impl;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
-import com.guyporat.config.Config;
 import com.guyporat.database.model.DeviceModel;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;

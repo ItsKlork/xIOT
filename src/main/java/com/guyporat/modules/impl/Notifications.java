@@ -2,7 +2,6 @@ package com.guyporat.modules.impl;
 
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
-import com.guyporat.config.Config;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
 import com.guyporat.networking.PacketType;
