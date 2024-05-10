@@ -4,12 +4,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
+import com.guyporat.database.Database;
+import com.guyporat.database.model.DeviceModel;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleManager;
 import com.guyporat.modules.impl.Devices;
 import com.guyporat.modules.impl.Notifications;
 import com.guyporat.networking.PacketType;
-import com.guyporat.utils.GsonUtils;
+import com.guyporat.utils.gson.GsonUtils;
 import com.guyporat.utils.Logger;
 import com.guyporat.utils.NetworkProtocol;
 
@@ -140,16 +142,26 @@ public class ClientSocketNetworkHandler extends Thread {
     }
 
     private boolean attemptLogin(JsonObject loginData) {
-        // TODO: implement authentication
-        if (!loginData.has("uuid") || !loginData.has("secret")) {
+        if (!loginData.has("uuid") || !loginData.has("secret") || !loginData.has("type")) {
             return false;
         }
         String deviceUUID = loginData.get("uuid").getAsString();
         String deviceSecret = loginData.get("secret").getAsString();
         String deviceType = loginData.get("type").getAsString();
-
-        this.client = new DeviceClient(this, UUID.fromString(deviceUUID), DeviceClient.IOTDeviceType.valueOf(deviceType));
-        this.client.loadSettings();
+        DeviceModel deviceModel = Database.DeviceTableManager.getInstance().getDeviceByUUID(UUID.fromString(deviceUUID));
+        if (deviceModel == null) {
+            Logger.error("Device " + deviceUUID + " not found in database");
+            return false;
+        }
+        if (deviceModel.deviceType != DeviceClient.IOTDeviceType.valueOf(deviceType)) {
+            Logger.error("Device " + deviceUUID + " tried logging in with an incorrect type");
+            return false;
+        }
+        if (!deviceModel.compareSecret(deviceSecret)) {
+            Logger.error("Device " + deviceUUID + " tried to login with an incorrect secret");
+            return false;
+        }
+        this.client = new DeviceClient(this, UUID.fromString(deviceUUID), DeviceClient.IOTDeviceType.valueOf(deviceType), deviceModel.deviceSettings);
         Logger.info("Device " + this.socket.getInetAddress().toString() + " logged in with uuid " + deviceUUID);
         return true;
     }

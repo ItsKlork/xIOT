@@ -6,8 +6,9 @@ import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
 import com.guyporat.networking.PacketType;
 import com.guyporat.networking.client.Client;
+import com.guyporat.networking.client.DeviceClient;
 import com.guyporat.networking.client.WebClient;
-import com.guyporat.utils.GsonUtils;
+import com.guyporat.utils.gson.GsonUtils;
 import com.guyporat.utils.Logger;
 import me.nurio.events.handler.EventHandler;
 import me.nurio.events.handler.EventListener;
@@ -18,7 +19,7 @@ public class Notifications extends Module implements EventListener {
 
     private static final UUID uuid = UUID.fromString("5ae0d00b-1377-4c7c-bc1a-7ec5e63c25a8");
 
-    private final int MAX_NOTIFICATIONS = 10;
+    private final int MAX_NOTIFICATIONS = 5;
     private List<Notification> notifications;
 
     private ModuleStatus status;
@@ -43,9 +44,9 @@ public class Notifications extends Module implements EventListener {
     @EventHandler
     public void onFaceRecognized(Camera.FaceRecognitionEvent event) {
         if (event.getFaces().length == 1 && event.getFaces()[0].equals("$Unknown")) {
-            this.sendNotification(new Notification(NotificationType.CAMERA_BAD, "זוהה פנים לא מוכרות במצלמה " + event.getCameraName()));
+            this.sendNotification(new Notification(NotificationType.CAMERA_BAD, "זוהה פנים לא מוכרות במצלמה " + event.getCameraSettings().getDeviceName()));
         } else if (event.getFaces().length > 0) {
-            String message = "זוהו במצלמה " + event.getCameraName() + ": " + String.join(", ", event.getFaces());
+            String message = "זוהו במצלמה " + event.getCameraSettings().getDeviceName() + ": " + String.join(", ", event.getFaces());
             this.sendNotification(new Notification(NotificationType.CAMERA_INFO, message));
         }
     }
@@ -54,6 +55,10 @@ public class Notifications extends Module implements EventListener {
     public void handleConnection(Client client, PacketType packetType, JsonObject data) {
         if (packetType == PacketType.GET_NOTIFICATIONS && client instanceof WebClient webClient) {
             this.sendNotifications(webClient);
+        }
+        if (packetType == PacketType.NOTIFICATION && client instanceof DeviceClient deviceClient) {
+            Notification notification = new Notification(NotificationType.valueOf(data.get("notificationType").getAsString()), data.get("message").getAsString());
+            this.sendNotification(notification);
         }
     }
 
@@ -161,6 +166,7 @@ public class Notifications extends Module implements EventListener {
         DOOR_BELL, // TODO: implement
         CAMERA_INFO,
         DEVICE_INFO,
-        CAMERA_BAD
+        CAMERA_BAD,
+        IMMERSION_TIMER
     }
 }

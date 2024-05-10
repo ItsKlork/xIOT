@@ -2,6 +2,7 @@ package com.guyporat.modules.impl;
 
 import com.google.gson.JsonObject;
 import com.guyporat.MainServer;
+import com.guyporat.database.Database;
 import com.guyporat.database.model.TenantModel;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
@@ -9,7 +10,8 @@ import com.guyporat.networking.PacketType;
 import com.guyporat.networking.client.Client;
 import com.guyporat.networking.client.DeviceClient;
 import com.guyporat.networking.client.WebClient;
-import com.guyporat.utils.GsonUtils;
+import com.guyporat.networking.client.states.CameraSettings;
+import com.guyporat.utils.gson.GsonUtils;
 import com.guyporat.utils.Logger;
 import me.nurio.events.handler.Event;
 
@@ -80,10 +82,9 @@ public class Camera extends Module {
     private void handleConnection(DeviceClient deviceClient, PacketType packetType, JsonObject data) {
         if (deviceClient.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA) { // Packets from a camera device
             switch (packetType) {
-                case GET_CAMERA_SETTINGS -> deviceClient.getNetworkHandler().sendPacket(PacketType.DEVICE_SETTINGS, deviceClient.getSettings());
                 case GET_FACE_RECOGNITION_FACE_DATASET -> {
                     HashMap<String, byte[]> dataset = new HashMap<>();
-                    for (TenantModel tenant : Tenants.getTenantDatabase()) {
+                    for (TenantModel tenant : Database.TenantTableManager.getInstance().getTenants()) {
                         dataset.put(tenant.getFullName(), tenant.getCompressedFaceData());
                     }
                     deviceClient.getNetworkHandler().sendPacket(PacketType.FACE_RECOGNITION_FACE_DATASET, dataset);
@@ -91,7 +92,7 @@ public class Camera extends Module {
                 case REPORT_FACE_RECOGNITION_DETECTION -> {
                     Logger.debug("Received a face report from client " + deviceClient.getDeviceUUID());
                     String[] faces = GsonUtils.getGson().fromJson(data.get("faces"), String[].class);
-                    MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces, deviceClient.getSettings().getDeviceName()));
+                    MainServer.getEventManager().callEvent(new FaceRecognitionEvent(faces, (CameraSettings) deviceClient.getSettings()));
                 }
             }
         }
@@ -110,7 +111,7 @@ public class Camera extends Module {
 
     private void handleConnection(WebClient webClient, PacketType packetType, JsonObject data) {
         if (packetType == PacketType.GET_CAMERAS) {
-            List<Devices.JsonDevice> allCameras = Devices.getDevicesInDBJson().stream().filter(device -> device.getDeviceType() == DeviceClient.IOTDeviceType.CAMERA).toList();
+            List<Devices.JsonDevice> allCameras = Devices.getCameraDevicesInDBJson();
             webClient.send(PacketType.GET_CAMERAS_RESPONSE, GsonUtils.getGson().toJson(allCameras));
         }
     }
@@ -118,19 +119,19 @@ public class Camera extends Module {
     public static class FaceRecognitionEvent extends Event {
 
         private final String[] faces;
-        private final String cameraName;
+        private final CameraSettings cameraSettings;
 
-        public FaceRecognitionEvent(String[] faces, String cameraName) {
+        public FaceRecognitionEvent(String[] faces, CameraSettings cameraSettings) {
             this.faces = faces;
-            this.cameraName = cameraName;
+            this.cameraSettings = cameraSettings;
         }
 
         public String[] getFaces() {
             return faces;
         }
 
-        public String getCameraName() {
-            return cameraName;
+        public CameraSettings getCameraSettings() {
+            return cameraSettings;
         }
     }
 

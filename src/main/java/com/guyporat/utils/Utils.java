@@ -44,4 +44,14 @@ public class Utils {
         }
     }
 
+    /**
+     * Add dashes to a stripped UUID
+     * @param strippedUUID UUID without dashes
+     * @return UUID with dashes as a string
+     */
+    public static String getDashedUUID(String strippedUUID) {
+        if (strippedUUID.length() != 32) throw new IllegalArgumentException("UUID must be 32 characters long");
+        return strippedUUID.substring(0, 8) + "-" + strippedUUID.substring(8, 12) + "-" + strippedUUID.substring(12, 16) + "-" + strippedUUID.substring(16, 20) + "-" + strippedUUID.substring(20);
+    }
+
 }

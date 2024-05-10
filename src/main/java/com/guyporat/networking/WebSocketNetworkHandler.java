@@ -40,6 +40,7 @@ public class WebSocketNetworkHandler extends WebSocketServer {
     @Override
     public void onError(WebSocket webSocket, Exception e) {
         webClients.remove(webSocket.getRemoteSocketAddress());
+        e.printStackTrace();
         Logger.error("WebSocket error: " + e.getMessage());
     }
 

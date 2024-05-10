@@ -3,11 +3,16 @@ package com.guyporat.modules.impl;
 import com.guyporat.MainServer;
 import com.guyporat.modules.Module;
 import com.guyporat.modules.ModuleStatus;
+import com.guyporat.networking.PacketType;
+import com.guyporat.networking.client.DeviceClient;
+import com.guyporat.networking.client.states.DeviceSettings;
+import com.guyporat.networking.client.states.DoorLockSettings;
 import com.guyporat.utils.Logger;
 import me.nurio.events.handler.EventHandler;
 import me.nurio.events.handler.EventListener;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DoorLock extends Module implements EventListener {
@@ -16,8 +21,6 @@ public class DoorLock extends Module implements EventListener {
     private final UUID uuid = UUID.fromString("d009a719-db5d-4e38-87be-ec59b9f65630");
 
     private List<String> allowedUsers;
-
-    private DoorState doorState;
 
 
     @Override
@@ -45,7 +48,6 @@ public class DoorLock extends Module implements EventListener {
         this.status = ModuleStatus.STOPPED;
 
         this.allowedUsers = List.of("Guy Porat", "Joe Biden");
-        this.doorState = DoorState.CLOSED;
 
         MainServer.getEventManager().registerEvents(this);
     }
@@ -77,24 +79,19 @@ public class DoorLock extends Module implements EventListener {
 
     @EventHandler
     public void onFaceRecognized(Camera.FaceRecognitionEvent event) {
-        for (String face : event.getFaces()) {
-            if (allowedUsers.contains(face)) {
-                if (doorState == DoorState.CLOSED)
-                    Logger.info("Opened door for " + face);
-                doorState = DoorState.OPEN;
-                return;
-            }
-        }
+        if (event.getFaces().length == 1 && event.getFaces()[0].equals("$Unknown"))
+            return;
+        UUID doorLockTargetUUID = event.getCameraSettings().getTargetDoorLock();
+        Optional<DeviceClient> doorLockClient = Devices.getActiveDevices().stream().filter(device -> device.getDeviceType() == DeviceClient.IOTDeviceType.DOOR_LOCK && device.getDeviceUUID().equals(doorLockTargetUUID)).findAny();
+        if (doorLockClient.isEmpty())
+            return;
+        DeviceClient doorLock = doorLockClient.get();
+        DoorLockSettings doorLockSettings = (DoorLockSettings) doorLock.getSettings();
+        if (doorLockSettings.isOpen())
+            return;
 
-        if (doorState == DoorState.OPEN) {
-            Logger.info("No recognized faces, closing door");
-            doorState = DoorState.CLOSED;
-        }
+        DeviceSettings newSettings = Devices.setDeviceSettings(doorLock.getDeviceUUID(), new DoorLockSettings(doorLockSettings.getDeviceName(), true));
+        doorLock.setSettings(newSettings);
+        doorLock.getNetworkHandler().sendPacket(PacketType.DEVICE_SETTINGS, newSettings);
     }
-
-    private enum DoorState {
-        OPEN,
-        CLOSED
-    }
-
 }

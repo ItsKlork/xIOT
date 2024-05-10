@@ -1,14 +1,9 @@
 package com.guyporat.networking.client;
 
-import com.google.gson.JsonElement;
-import com.guyporat.modules.impl.Devices;
 import com.guyporat.networking.client.states.CameraSettings;
 import com.guyporat.networking.client.states.DeviceSettings;
-import com.guyporat.networking.client.states.DoorLockSettings;
-import com.guyporat.utils.GsonUtils;
 import com.guyporat.utils.Logger;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class DeviceClient extends Client {
@@ -17,12 +12,12 @@ public class DeviceClient extends Client {
     private DeviceSettings settings;
 
     private transient final ClientSocketNetworkHandler networkHandler; // Transient to prevent serialization
-    private String cameraHLSPort = "7171"; // TODO: accept on camera handshake
 
-    public DeviceClient(ClientSocketNetworkHandler networkHandler, UUID deviceUUID, IOTDeviceType deviceType) {
+    public DeviceClient(ClientSocketNetworkHandler networkHandler, UUID deviceUUID, IOTDeviceType deviceType, DeviceSettings deviceSettings) {
         this.networkHandler = networkHandler;
         this.deviceUUID = deviceUUID;
         this.deviceType = deviceType;
+        this.settings = deviceSettings;
     }
 
     public ClientSocketNetworkHandler getNetworkHandler() {
@@ -46,21 +41,8 @@ public class DeviceClient extends Client {
         return settings;
     }
 
-    public void setSettings(JsonElement jsonElement) {
-        if (this.deviceType == IOTDeviceType.CAMERA) {
-            this.settings = GsonUtils.getGson().fromJson(jsonElement, CameraSettings.class);
-        } else if (this.deviceType == IOTDeviceType.DOOR_LOCK) {
-            this.settings = GsonUtils.getGson().fromJson(jsonElement, DoorLockSettings.class);
-        }
-    }
-
-    public void loadSettings() {
-        // TODO: load settings from database
-        try {
-            this.settings = Devices.getDevicesInDB().stream().filter(device -> device.deviceUUID.equals(this.deviceUUID)).findFirst().orElseThrow().deviceSettings;
-        } catch (NoSuchElementException e) {
-            Logger.error("[UNEXPECTED ERROR] Device " + this.deviceUUID + " not found in database. This is AFTER authentication.");
-        }
+    public void setSettings(DeviceSettings deviceSettings) {
+        this.settings = deviceSettings;
     }
 
     public String getHLSUrl() {
@@ -68,14 +50,15 @@ public class DeviceClient extends Client {
             Logger.error("Attempted to get HLS URL for non-camera device");
             return null;
         }
-        return "http://" + this.networkHandler.getSocket().getInetAddress().getHostAddress() + ":" + this.cameraHLSPort; // TODO: change to https
+        return "http://" + this.networkHandler.getSocket().getInetAddress().getHostAddress() + ":" + ((CameraSettings)this.settings).getHttpPort(); // TODO: change to https
     }
 
     public enum IOTDeviceType {
         CAMERA,
-        AIR_CONDITIONER,
-        LIGHTS,
+        AIRCON,
+        LIGHT,
         DOOR_LOCK,
+        WATER_HEATER,
     }
 
     public static class ShortDeviceObject {

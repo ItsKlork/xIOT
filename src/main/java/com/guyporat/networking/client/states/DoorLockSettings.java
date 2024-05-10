@@ -9,9 +9,20 @@ public class DoorLockSettings extends DeviceSettings {
         this.openState = openState;
     }
 
+    public boolean isOpen() {
+        return openState;
+    }
+
     @Override
     public String getDeviceName() {
         return name;
     }
 
+    @Override
+    public String toString() {
+        return "DoorLockSettings{" +
+                "openState=" + openState +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

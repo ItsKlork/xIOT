@@ -25,6 +25,8 @@ public enum PacketType {
     ADD_TENANT(9, Tenants.getStaticUUID()),
     GET_CAMERAS(10, Camera.getStaticUUID()),
     GET_NOTIFICATIONS(11, Notifications.getStaticUUID()),
+    WEB_AUTH_TOKEN(12, null),
+    REMOVE_DEVICE(13, Devices.getStaticUUID()),
     // END REGION
 
 
@@ -42,15 +44,18 @@ public enum PacketType {
     GET_CAMERAS_RESPONSE(60),
     NEW_NOTIFICATION(61),
     GET_NOTIFICATIONS_RESPONSE(62),
+    WEB_AUTH_TOKEN_RESPONSE(63),
+    REMOVE_DEVICE_RESPONSE(64),
     // END REGION
 
 
     // REGION Device client to server packets (100 - 149)
     DEVICE_AUTHENTICATION(100, null),
-    GET_CAMERA_SETTINGS(101, Camera.getStaticUUID()),
+    GET_SETTINGS(101, Devices.getStaticUUID()),
     GET_FACE_RECOGNITION_FACE_DATASET(102, Camera.getStaticUUID()),
     REPORT_FACE_RECOGNITION_DETECTION(103, Camera.getStaticUUID()),
-
+    UPDATE_SELF_SETTINGS(104, Devices.getStaticUUID()),
+    NOTIFICATION(105, Notifications.getStaticUUID()),
     // END REGION
 
 

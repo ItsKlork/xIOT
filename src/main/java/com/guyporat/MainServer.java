@@ -1,6 +1,7 @@
 package com.guyporat;
 
 import com.guyporat.config.Config;
+import com.guyporat.database.Database;
 import com.guyporat.modules.ModuleManager;
 import com.guyporat.networking.HLSReverseProxy;
 import com.guyporat.networking.SocketNetworkHandler;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
+import java.sql.SQLException;
 
 public class MainServer {
 
@@ -22,10 +24,19 @@ public class MainServer {
     private static SocketNetworkHandler socketNetworkHandler;
     private static WebSocketNetworkHandler webSocketNetworkHandler;
 
+    private static Database database;
+
     private static final EventManager eventManager = new EventManager();
 
     public static void main(String[] args) {
         initializeMainConfig();
+
+        database = new Database();
+        try {
+            database.initialize();
+        } catch (SQLException e) {
+            Logger.error("Failed to initialize database: " + e.getMessage());
+        }
 
         ModuleManager.getInstance().initializeManager();
 
@@ -74,6 +85,10 @@ public class MainServer {
 
     public static WebSocketNetworkHandler getWebSocketNetworkHandler() {
         return webSocketNetworkHandler;
+    }
+
+    public static Database getDatabase() {
+        return database;
     }
 
     public static EventManager getEventManager() {

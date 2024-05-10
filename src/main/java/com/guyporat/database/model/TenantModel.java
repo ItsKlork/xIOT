@@ -121,6 +121,10 @@ public class TenantModel {
         return this.faceDataPath;
     }
 
+    public String getHashedPassword() {
+        return hashedPassword;
+    }
+
     public static class CensoredTenantModel {
         private String fullName;
 
